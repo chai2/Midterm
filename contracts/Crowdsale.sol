@@ -11,4 +11,10 @@ import './Token.sol';
 
 contract Crowdsale {
 	// YOUR CODE HERE
+    uint256 public startTime;
+    uint256 public endTime;
+
+    uint256 public tokenCount;
+
+    address owner;
 }
