@@ -33,6 +33,7 @@ contract ZeusCrowdsale is CappedCrowdsale, RefundableCrowdsale {
 	address public owner;
 
 	function ZeusCrowdsale(uint256 _startTime, uint256 _endTime, uint256 _rate, address _wallet)     {
+        // Crowdsale(_startTime, _endTime, _rate, _wallet);
 	    require(_startTime >= now);
 	    require(_endTime >= _startTime);
 	    require(_rate > 0);
@@ -47,8 +48,8 @@ contract ZeusCrowdsale is CappedCrowdsale, RefundableCrowdsale {
 	    wallet = _wallet;
 	}
 
-	function createTokenContract() {
-    	return new Token();
+	function createTokenContract() internal returns (MintableToken) {
+    	return new MintableToken();
   	}
 
   	function () payable {
