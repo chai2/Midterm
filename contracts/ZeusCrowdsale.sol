@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-// import 'zeppelin-solidity/contracts/crowdsale/Crowdsale.sol';
+import 'zeppelin-solidity/contracts/crowdsale/Crowdsale.sol';
 import 'zeppelin-solidity/contracts/token/MintableToken.sol';
 import './Queue.sol';
 import './Token.sol';
@@ -14,7 +14,7 @@ import '../utils/SafeMath.sol';
  * Is timelocked, manages buyer queue, updates balances on `Token.sol`
  */
 
-contract ZeusCrowdsale{
+contract ZeusCrowdsale is Crowdsale {
 
 	using SafeMath for uint256;
 	MintableToken public token;
@@ -38,7 +38,7 @@ contract ZeusCrowdsale{
 	    require(_wallet != address(0));
 
 		owner = msg.sender;
-	    
+
 	    token = createTokenContract();
 	    startTime = _startTime;
 	    endTime = _endTime;
