@@ -1,12 +1,13 @@
 pragma solidity ^0.4.15;
 
-import 'zeppelin-solidity/contracts/crowdsale/Crowdsale.sol';
-import 'zeppelin-solidity/contracts/token/MintableToken.sol';
 import './Queue.sol';
 import './Token.sol';
 
 import '../utils/Math.sol';
 import '../utils/SafeMath.sol';
+
+import '../zeppelin/Crowdsale.sol';
+import '../zeppelin/MintableToken.sol';
 
 /**
  * @title Crowdsale
@@ -14,7 +15,7 @@ import '../utils/SafeMath.sol';
  * Is timelocked, manages buyer queue, updates balances on `Token.sol`
  */
 
-contract ZeusCrowdsale is Crowdsale {
+contract ZeusCrowdsale is CappedCrowdsale, RefundableCrowdsale {
 
 	using SafeMath for uint256;
 	MintableToken public token;
