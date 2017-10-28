@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 
 import './Queue.sol';
 import './Token.sol';
+import 'zeppelin-solidity/contracts/crowdsale/Crowdsale.sol';
 
 /**
  * @title Crowdsale

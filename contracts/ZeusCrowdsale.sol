@@ -6,8 +6,9 @@ import './Token.sol';
 import '../utils/Math.sol';
 import '../utils/SafeMath.sol';
 
-import '../zeppelin/Crowdsale.sol';
-import '../zeppelin/MintableToken.sol';
+import '../zeppelin/crowdsale/CappedCrowdsale.sol';
+import '../zeppelin/crowdsale/RefundableCrowdsale.sol';
+import '../zeppelin/token/MintableToken.sol';
 
 /**
  * @title Crowdsale
@@ -17,12 +18,11 @@ import '../zeppelin/MintableToken.sol';
 
 contract ZeusCrowdsale is CappedCrowdsale, RefundableCrowdsale {
 
-	using SafeMath for uint256;
 	MintableToken public token;
 
-	uint256 public _startTime;
-	uint256 public _endTime;
-	address public _wallet;
+	uint256 public startTime;
+	uint256 public endTime;
+	address public wallet;
 	uint256 public rate;
 	uint256 public weiRaised;
 	bool public saleEnded;
