@@ -2,7 +2,6 @@ pragma solidity ^0.4.15;
 
 import './interfaces/ERC20Interface.sol';
 import './utils/SafeMath.sol';
-import './Queue.sol';
 
 /**
  * @title Token
@@ -17,6 +16,9 @@ import './Queue.sol';
  	string public constant name = "BAB";
     string public constant symbol = "BAB";
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
+   	address owner;
+
+   	uint256 public totalSupply;
 
    	mapping(address => uint256) balances;
    	mapping(address => mapping(address => uint256)) approved;
