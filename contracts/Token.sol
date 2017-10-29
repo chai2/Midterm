@@ -1,6 +1,8 @@
 pragma solidity ^0.4.15;
 
 import './interfaces/ERC20Interface.sol';
+import './utils/SafeMath.sol';
+import './Queue.sol';
 
 /**
  * @title Token
@@ -8,70 +10,103 @@ import './interfaces/ERC20Interface.sol';
  * Is deployed by `Crowdsale.sol`, keeps track of balances, etc.
  */
 
-contract Token is ERC20Interface {
-	string public name = "Zeus";
-	string public symbol = "Zeus";
-	uint8 public demical = 18;
-	uint256 public totalSupply = 48000;
-	
-	event Mint(address indexed to, uint256 amount);
-	event Burn(address indexed burner, uint256 value);
-	event MintFinished();
+ contract Token is ERC20Interface {
 
-	bool public mintingFinished = false;
+ 	Queue public queue;
 
-	modifier canMint() {
-    	require(!mintingFinished);
-    	_;
-  	}
+ 	string public constant name = "BAB";
+    string public constant symbol = "BAB";
+    uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
 
-  	function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) {
-	    if(_amount > totalSupply){
-	    	finishMinting();
-	    	return;
-	    }
-	    totalSupply = totalSupply.add(_amount);
-	    balances[_to] = balances[_to].add(_amount);
-	    Mint(_to, _amount);
-	    Transfer(address(0), _to, _amount);
-	    return true;
-  	}
+   	mapping(address => uint256) balances;
+   	mapping(address => mapping(address => uint256)) approved;
 
-  	function finishMinting() onlyOwner public returns (bool) {
-    	mintingFinished = true;
-    	MintFinished();
-    	return true;
-  	}
+   	using SafeMath for uint256;
 
-  	function burn(uint256 _value) public {
-        require(_value > 0);
-        require(_value <= balances[msg.sender]);
+   	modifier isVerifiedBuyer() {
+     		require(buyer != owner);
+       	_;
+     }
 
-        address burner = msg.sender;
-        balances[burner] = balances[burner].sub(_value);
-        totalSupply = totalSupply.sub(_value);
-        Burn(burner, _value);
-    }
+   	function Token(uint256 _totalSupply, address buyerAddress) public {
+       	balances[buyerAddress] = _totalSupply;
+     	totalSupply = _totalSupply;
+     	// queue.enqueue(buyerAddress);
+     }
 
-	// bool saleEnded;
+   	function addSupply(address buyerAddress, uint256 _amount) isVerifiedBuyer() public {
+       	totalSupply += _amount;
+       	balances[buyerAddress] = balances[buyerAddress].add(_amount); 
+     }
 
-	// address public minter;
-	// mapping (address => uint) public balances;
+     function burnToken(uint256 _amount) isOwner() public {
+       if (balances[msg.sender] >= _amount) {
+         totalSupply -= _amount;
+         balances[msg.sender] = balances[msg.sender].sub(_amount);
+       }
+     }
 
-	// function Coin() {
-	// 	minter = msg.sender;
-	// }
+ 		/* @param _owner The address from which the balance will be retrieved
+       @return The balance */
+     function balanceOf(address _owner) constant public returns (uint256 balance) {
+     		return balances[_owner];
+     }
 
-	// function mint(address receive, uint amount) {
-	// 	if (msg.sender != minter ) return;
-	// 	balances[receiver] += amount;
-	// }
+   	/* @notice send `_value` token to `_to` from `msg.sender`
+       @param _to The address of the recipient
+       @param _value The amount of token to be transferred
+       @return Whether the transfer was successful or not */
+     function transfer(address _to, uint256 _value) public returns (bool success) {
+       	if (balances[msg.sender] < _value) {
+         		return false;
+         }
+         balances[msg.sender] = balances[msg.sender].sub(_value);
+       	balances[_to] = balances[_to].add(_value);
+       	Transfer(msg.sender, _to, _value);
+       	return true;
+     }
 
-	// function send(address receiver, uint amount) {
-	// 	if (balances[msg.sender] < amount) return ;
-	// 	balances[msg.sender] -= amount;
-	// 	balances[receiver] += amount;
-	// 	Purchase(msg.sender, receiver, amount);
-	// }
+   	  /* @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
+         @param _from The address of the sender
+         @param _to The address of the recipient
+         @param _value The amount of token to be transferred
+         @return Whether the transfer was successful or not */
+     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+       	uint256 allowed = approved[_from][msg.sender];
 
-}
+       	if (balances[_from] < _value || allowed < _value) {
+           	return false;
+         }
+       	balances[_from] = balances[_from].sub(_value);
+       	approved[_from][msg.sender] = allowed.sub(_value);
+  				balances[_to] = balances[_to].add(_value);
+       	Transfer(_from, _to, _value);
+       	return true;
+     }
+
+     /*@notice `msg.sender` approves `_spender` to spend `_value` tokens
+       @param _spender The address of the account able to transfer the tokens
+       @param _value The amount of tokens to be approved for transfer
+       @return Whether the approval was successful or not */
+     function approve(address _spender, uint256 _value) public returns (bool success) {
+       	approved[msg.sender][_spender] = _value;
+       	Approval(msg.sender, _spender, _value);
+       	return true;
+     }
+
+   	function refundApprove(address _refundee, uint256 _value) isOwner() public returns (bool success) {
+       	approved[_refundee][msg.sender] = _value;
+       	Approval(_refundee, msg.sender, _value);
+       	return true;
+     }
+
+    /*@param _owner The address of the account owning tokens
+      @param _spender The address of the account able to transfer the tokens
+      @return Amount of remaining tokens allowed to spent */
+     function allowance(address _owner, address _spender) constant public returns (uint256 remaining) {
+       	return approved[_owner][_spender];
+     }
+
+     event Transfer(address indexed _from, address indexed _to, uint256 _value);
+     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+ }

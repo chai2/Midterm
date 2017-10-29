@@ -11,49 +11,81 @@ contract Queue {
 	/* State variables */
 	uint8 size = 5;
 	// YOUR CODE HERE
-
+	address[] list = new address[];
+	mapping(address => uint) beginBlockNum;
+	/* number of blocks within which you are allowed to participate */
+	uint time;
 	/* Add events */
-	// YOUR CODE HERE
+	event Boot(
+		address booted
+		);
+	/* Include an event to log an error?*/
 
 	/* Add constructor */
 	// YOUR CODE HERE
+	/* Ideally, you would be allowed to submit a queue size */
+	function Queue(uint _time) {
+		time = _time;
+	}
 
 	/* Returns the number of people waiting in line */
 	function qsize() constant returns(uint8) {
-		// YOUR CODE HERE
+		return list.length;
 	}
 
 	/* Returns whether the queue is empty or not */
 	function empty() constant returns(bool) {
-		// YOUR CODE HERE
+		if (qsize() == 0) {
+			return true;
+		}
+		return false;
 	}
-	
+
 	/* Returns the address of the person in the front of the queue */
 	function getFirst() constant returns(address) {
-		// YOUR CODE HERE
+		if (!empty()){
+			return list[0];
+		}
 	}
-	
-	/* Allows `msg.sender` to check their position in the queue */
+
+	/* Allows `msg.sender` to check their position in the queue
+	   -1 indicates that they are not in the queue */
 	function checkPlace() constant returns(uint8) {
-		// YOUR CODE HERE
+		for (int i = 0; i < size; i ++){
+			if (list[i] == msg.sender){
+				return i;
+			}
+		}
+		return -1;
 	}
-	
+
 	/* Allows anyone to expel the first person in line if their time
 	 * limit is up
 	 */
 	function checkTime() {
-		// YOUR CODE HERE
+		if ((block.number - beginBlockNum[getFirst()]) > time){
+			dequeue();
+		}
 	}
-	
+
 	/* Removes the first person in line; either when their time is up or when
 	 * they are done with their purchase
 	 */
 	function dequeue() {
-		// YOUR CODE HERE
+		for (int i = 1; i < size-1; i ++) {
+			list[i-1] = list[i];
+		}
+		address first = getFirst();
+		beginBlockNum[first] = block.number;
 	}
 
 	/* Places `addr` in the first empty position in the queue */
 	function enqueue(address addr) {
-		// YOUR CODE HERE
+		if (qsize() < 5){
+			list.push(addr);
+		}
+		if (checkPlace() == 0){
+			beginBlockNum[addr] = block.number;
+		}
 	}
 }
