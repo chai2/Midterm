@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hello World DApp</title>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+  <style>
+    .margin-top-3 {
+      margin-top: 3em;
+    }
+  </style>
+</head>
+<body class="container">
+  <h1>BAB - Token Sale</h1>
+  <div class="col-md-6">
+    <div class="row">
+      <h2>Purchase Tokens</h2>
+      <div class="col-sm-12">
+        <div id="buy-msg"></div>
+        <input type="text" id="fromAddress" class="col-sm-8" placeholder="Enter Address"/>&nbsp;
+        <input type="text" id="buy" class="col-sm-8" placeholder="Number of tokens to buy"/>&nbsp;
+        <a href="#" onclick="buyTokens()" class="btn btn-primary">Buy</a>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+<script src="main.js"></script>
+</html>
