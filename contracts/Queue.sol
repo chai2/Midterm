@@ -11,7 +11,7 @@ contract Queue {
 	/* State variables */
 	uint8 size = 5;
 	// YOUR CODE HERE
-	address[] list = new address[];
+	address[] list;
 	mapping(address => uint) beginBlockNum;
 	/* number of blocks within which you are allowed to participate */
 	uint time;
@@ -29,7 +29,7 @@ contract Queue {
 	}
 
 	/* Returns the number of people waiting in line */
-	function qsize() constant returns(uint8) {
+	function qsize() constant returns(uint) {
 		return list.length;
 	}
 
@@ -50,13 +50,15 @@ contract Queue {
 
 	/* Allows `msg.sender` to check their position in the queue
 	   -1 indicates that they are not in the queue */
-	function checkPlace() constant returns(uint8) {
-		for (int i = 0; i < size; i ++){
+	function checkPlace() constant returns(bool) {
+		for (uint i = 0; i < size; i ++){
 			if (list[i] == msg.sender){
-				return i;
+				return true;
+			} else {
+				return false;
 			}
 		}
-		return -1;
+		
 	}
 
 	/* Allows anyone to expel the first person in line if their time
@@ -72,7 +74,7 @@ contract Queue {
 	 * they are done with their purchase
 	 */
 	function dequeue() {
-		for (int i = 1; i < size-1; i ++) {
+		for (uint i = 1; i < size-1; i ++) {
 			list[i-1] = list[i];
 		}
 		address first = getFirst();
@@ -84,7 +86,7 @@ contract Queue {
 		if (qsize() < 5){
 			list.push(addr);
 		}
-		if (checkPlace() == 0){
+		if (checkPlace()){
 			beginBlockNum[addr] = block.number;
 		}
 	}

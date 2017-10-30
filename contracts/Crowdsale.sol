@@ -34,7 +34,6 @@ contract Crowdsale {
   Queue public queue;
 
   address public owner;
-  address public buyerAddress;
 
   /**
    * event for token purchase logging
@@ -49,22 +48,21 @@ contract Crowdsale {
 
   	// mapping(address => uint256) buyerAddresses;
 
-  	buyerAddress = msg.sender;
+  	address buyerAddress = msg.sender;
   	owner = _owner;
-
   	uint256 currentTime;
     uint256 totalSupply;
 
     require(_startTime >= block.number);
     require(_endTime >= _startTime);
     require(_rate > 0);
-    require(buyerAddress != ownerAddress);
+    require(buyerAddress != owner);
 
     currentTime = now;
 
 	queue = new Queue(maxTime);
 
-    token = createTokenContract(buyerAddress, ownerAddress, totalSupply);
+    token = createTokenContract(buyerAddress, totalSupply);
     startTime = _startTime;
     endTime = _endTime;
     rate = _rate;
@@ -75,7 +73,7 @@ contract Crowdsale {
 
   // creates the token to be sold.
   // override this method to have crowdsale of a specific mintable token.
-  function createTokenContract(address buyerAddress, address ownerAddress, uint256 totalSupply) internal returns (Token) {
+  function createTokenContract(address buyerAddress, uint256 totalSupply) internal returns (Token) {
     return new Token(totalSupply, buyerAddress);
   }
 
@@ -86,7 +84,6 @@ contract Crowdsale {
 
   // low level token purchase function
   function buyTokens(address buyerAddress) public payable {
-  	require(!hasEnded);
     require(buyerAddress != owner);
     require(validPurchase());
 
@@ -99,7 +96,7 @@ contract Crowdsale {
     weiRaised = weiRaised.add(weiAmount);
 
     token.addSupply(buyerAddress, tokens);
-    TokenPurchase(buyerAddress, ownerAddress, weiAmount, tokens);
+    TokenPurchase(buyerAddress, owner, weiAmount, tokens);
 
     forwardFunds();
   }
@@ -107,7 +104,7 @@ contract Crowdsale {
   // send ether to the fund collection wallet
   // override to create custom fund forwarding mechanisms
   function forwardFunds() internal {
-    ownerAddress.transfer(msg.value);
+    owner.transfer(msg.value);
   }
 
   // @return true if the transaction can buy tokens
