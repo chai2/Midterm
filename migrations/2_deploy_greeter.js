@@ -10,8 +10,9 @@ async function liveDeploy(deployer){
   crowdSaleInfo(web3.eth.accounts[0]);
   return deployer.deploy(Crowdsale, totalSupply, startTime, endTime, rate, owner, maxTime).then(async () => {
     const instance = await Crowdsale.deployed();
-    // const token = await instance.token.call();
-  }
+    const token = await instance.token.call();
+    console.log('Token Address', token);
+  });
 }
 
 function crowdSaleInfo(owner_account){
