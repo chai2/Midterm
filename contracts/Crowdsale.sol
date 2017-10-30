@@ -2,6 +2,7 @@ pragma solidity ^0.4.11;
 
 import './utils/SafeMath.sol';
 import './Token.sol';
+import './Queue.sol';
 
 /**
  * @title Crowdsale
@@ -21,7 +22,7 @@ contract Crowdsale {
   uint256 public endTime;
 
   // address where funds are collected
-  address public owner;
+  // address public owner;
 
   // how many token units a buyer gets per wei
   uint256 public rate;
@@ -30,6 +31,10 @@ contract Crowdsale {
   uint256 public weiRaised;
 
   Token public token;
+  Queue public queue;
+
+  address public owner;
+  address public buyerAddress;
 
   /**
    * event for token purchase logging
@@ -40,13 +45,15 @@ contract Crowdsale {
    */
   event TokenPurchase(address indexed purchaser, address indexed sender, uint256 value, uint256 amount);
 
-  function Crowdsale(uint256 _startTime, uint256 _endTime, uint256 _rate, address owner, uint maxTime) {
+  function Crowdsale(uint256 _startTime, uint256 _endTime, uint256 _rate, address _owner, uint maxTime) {
 
   	// mapping(address => uint256) buyerAddresses;
 
-  	address buyerAddress = msg.sender;
-  	address ownerAddress = owner;
+  	buyerAddress = msg.sender;
+  	owner = _owner;
+
   	uint256 currentTime;
+    uint256 totalSupply;
 
     require(_startTime >= block.number);
     require(_endTime >= _startTime);
@@ -57,7 +64,7 @@ contract Crowdsale {
 
 	queue = new Queue(maxTime);
 
-    token = createTokenContract(buyerAddress, ownerAddress);
+    token = createTokenContract(buyerAddress, ownerAddress, totalSupply);
     startTime = _startTime;
     endTime = _endTime;
     rate = _rate;
@@ -68,13 +75,13 @@ contract Crowdsale {
 
   // creates the token to be sold.
   // override this method to have crowdsale of a specific mintable token.
-  function createTokenContract(buyerAddress, ownerAddress) internal returns (Token) {
+  function createTokenContract(address buyerAddress, address ownerAddress, uint256 totalSupply) internal returns (Token) {
     return new Token(totalSupply, buyerAddress);
   }
 
   // fallback function can be used to buy tokens
   function () payable {
-    buyTokens(buyerAddress);
+    buyTokens(msg.sender);
   }
 
   // low level token purchase function
@@ -92,7 +99,7 @@ contract Crowdsale {
     weiRaised = weiRaised.add(weiAmount);
 
     token.addSupply(buyerAddress, tokens);
-    TokenPurchase(msg.sender, beneficiary, weiAmount, tokens);
+    TokenPurchase(buyerAddress, ownerAddress, weiAmount, tokens);
 
     forwardFunds();
   }

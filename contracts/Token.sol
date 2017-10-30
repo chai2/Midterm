@@ -11,11 +11,10 @@ import './utils/SafeMath.sol';
 
  contract Token is ERC20Interface {
 
- 	Queue public queue;
-
  	string public constant name = "BAB";
     string public constant symbol = "BAB";
     uint8 public constant decimals = 18;  // 18 is the most common number of decimal places
+
    	address owner;
 
    	uint256 public totalSupply;
@@ -26,11 +25,14 @@ import './utils/SafeMath.sol';
    	using SafeMath for uint256;
 
    	modifier isVerifiedBuyer() {
-     		require(buyer != owner);
+     		require(msg.sender != owner);
        	_;
      }
 
    	function Token(uint256 _totalSupply, address buyerAddress) public {
+   		// address buyerAddress;
+   		// address senderAddres;
+
        	balances[buyerAddress] = _totalSupply;
      	totalSupply = _totalSupply;
      	// queue.enqueue(buyerAddress);
@@ -41,7 +43,7 @@ import './utils/SafeMath.sol';
        	balances[buyerAddress] = balances[buyerAddress].add(_amount); 
      }
 
-     function burnToken(uint256 _amount) isOwner() public {
+     function burnToken(uint256 _amount) isVerifiedBuyer() public {
        if (balances[msg.sender] >= _amount) {
          totalSupply -= _amount;
          balances[msg.sender] = balances[msg.sender].sub(_amount);
@@ -96,7 +98,7 @@ import './utils/SafeMath.sol';
        	return true;
      }
 
-   	function refundApprove(address _refundee, uint256 _value) isOwner() public returns (bool success) {
+   	function refundApprove(address _refundee, uint256 _value)  isVerifiedBuyer() public returns (bool success) {
        	approved[_refundee][msg.sender] = _value;
        	Approval(_refundee, msg.sender, _value);
        	return true;
